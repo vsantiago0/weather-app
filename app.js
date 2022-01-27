@@ -1,14 +1,16 @@
-const request = require('postman-request')
+const geocode = require('./utils/geocode.js')
+const forecast = require('./utils/forecast')
 
-const url = 'http://api.weatherstack.com/current?access_key=df2dc5ee1580ceca75f266e8544aeedd&query=Barcelona'
+const input = process.argv[2]
 
-request({ url: url, json: true }, (error, response) => {
-    console.log(response.body.current)
-})
-
-const mapUrl =  'https://api.mapbox.com/geocoding/v5/mapbox.places/Barcelona.json?access_token=pk.eyJ1Ijoicm90Y2l2MDIiLCJhIjoiY2t5MzhrZzlkMHQzOTJ1bGxibWphZnVzdCJ9.3NUFK8uJsXP8Zvb8yxMYHw&limit=1'
-
-request({ url: mapUrl, json: true }, (error, response) => {
-	console.log('Longitude: ' + response.body.features[0].center[0])
-	console.log('Latitude: ' + response.body.features[0].center[1])
-})
+if (input) {
+	geocode(input, (error, {longitude:lon, latitude:lat} = {}) => {
+		if (error) return console.log(error)
+		forecast(lat, lon, (error, {longitude:fLon, latitude:fLat, temperature:temp} = {}) => {
+			if (error) return console.log(error)
+			console.log('The temperature in ' + input + ' is ' + temp + 'ºC. Latitude: ' + fLat + ', longitude: ' + fLon)
+		})
+	})
+} else {
+	console.log('Name a city!')
+}
